@@ -5,6 +5,8 @@ const app = express();
 
 const cors = require('cors');
 
+const { connectDB } = require('./database/config'); //Get database info
+
 const PORT = process.env.PORT || 3000;
 
 //Import routes
@@ -14,8 +16,7 @@ const submissionsRoutes = require('./routes/submissionsRoutes');
 const usersRoutes = require('./routes/usersRoutes');
 const swaggerRoutes = require('./routes/swaggerRoutes');
 
-//Get database info
-const { connectDB } = require('./database/config'); 
+
 
 app.use(cors()); //controls origin access
 app.use(express.json());
