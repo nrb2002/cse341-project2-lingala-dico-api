@@ -1,4 +1,5 @@
 const validator = require('validator');
+const mongodb = require('mongodb');
 
 const word = (req, res, next) => {
   const { sourceWord, targetWord } = req.body;
@@ -14,6 +15,16 @@ const word = (req, res, next) => {
   next();
 };
 
+//ID validator
+const checkId = (req, res, next) => {
+  if (!mongodb.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid ID format' });
+  }
+  next();
+};
+
+
 module.exports = {
-  word
+  word,
+  checkId
 };

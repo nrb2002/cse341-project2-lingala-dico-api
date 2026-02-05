@@ -6,6 +6,12 @@ const auth = require('../middleware/auth');
 
 router.get('/', wordsController.getAllWords);
 
+router.get(
+  '/:id', 
+  validate.checkId,
+  wordsController.getSingleWord
+);
+
 router.post(
   '/',
   auth.requiresAuth,
@@ -17,12 +23,14 @@ router.put(
   '/:id', 
   auth.requiresAuth, 
   validate.word, 
+  validate.checkId, 
   wordsController.updateWord
 );
 
 router.delete(
   '/:id', 
   auth.requiresAuth, 
+  validate.checkId, 
   wordsController.deleteWord
 );
 

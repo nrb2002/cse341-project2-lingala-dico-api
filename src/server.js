@@ -17,7 +17,6 @@ const usersRoutes = require('./routes/usersRoutes');
 const swaggerRoutes = require('./routes/swaggerRoutes');
 
 
-
 app.use(cors()); //controls origin access
 app.use(express.json());
 
