@@ -5,7 +5,7 @@ const Word = require('../models/Word');
 const getAllWords = async (req, res, next) => {
   //#swagger.tags=["API Endpoints"]
   //#swagger.summary="Find all words"
-  //#swagger.description="List all words from the database."
+  //#swagger.description="List all words from the dictionary."
   try {
     const result = await (await Word.collection()).find().toArray();
     res.status(200).json(result);
@@ -14,30 +14,31 @@ const getAllWords = async (req, res, next) => {
   }
 };
 
-//Get one specific word
+//Get one specific word's translation
 const getSingleWord = async (req, res, next) => {
   //#swagger.tags=["API Endpoints"]
-  //#swagger.summary="Get one word"
-  //#swagger.description="Retrieve a single word by its ID."
-  /* #swagger.parameters['id'] = {
+  //#swagger.summary="Find the translation of a word."
+  //#swagger.description="Get a specific word's translation using its source word."
+  /* #swagger.parameters['sourceWord'] = {
       in: 'path',
-      description: 'Word ID',
+      description: 'English source word',
       required: true,
-      type: 'string'
+      type: 'string',
+      example: 'love'
   } */
 
   try {
-    const wordId = new mongodb.ObjectId(req.params.id);
+    const sourceWord = req.params.sourceWord.toLowerCase();
 
-    const result = await (await Word.collection())
-      .find({ _id: wordId })
-      .toArray();
+    const result = await (await Word.collection()).findOne({
+      sourceWord: sourceWord
+    });
 
-    if (!result[0]) {
+    if (!result) {
       return res.status(404).json({ message: 'Word not found' });
     }
 
-    res.status(200).json(result[0]);
+    res.status(200).json(result);
   } catch (err) {
     next(err);
   }

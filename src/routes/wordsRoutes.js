@@ -6,9 +6,16 @@ const auth = require('../middleware/auth');
 
 router.get('/', wordsController.getAllWords);
 
+// router.get(
+//   '/:id', 
+//   validate.checkId,
+//   wordsController.getSingleWord
+// );
+
+//Get a word's translation using its source
 router.get(
-  '/:id', 
-  validate.checkId,
+  '/:sourceWord', 
+  validate.sourceWordParam,
   wordsController.getSingleWord
 );
 
