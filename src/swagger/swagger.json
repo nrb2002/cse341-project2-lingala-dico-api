@@ -13,9 +13,6 @@
   "paths": {
     "/": {
       "get": {
-        "tags": [
-          "Home Page"
-        ],
         "description": "",
         "responses": {
           "200": {
@@ -24,47 +21,45 @@
         }
       }
     },
-    "/v1/words/": {
+    "/v1/words/{sourceWord}": {
       "get": {
         "tags": [
-          "API Endpoints"
+          "Public Users' Endpoint"
         ],
-        "summary": "Find all words",
-        "description": "List all words from the dictionary.",
+        "summary": "Get a word's translation",
+        "description": "Retrieve a validated English–Lingala dictionary entry.",
+        "parameters": [
+          {
+            "name": "sourceWord",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "example": "love"
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
           }
         }
-      },
+      }
+    },
+    "/v1/words/": {
       "post": {
         "tags": [
-          "API Endpoints"
+          "Contributors' Endpoint"
         ],
-        "summary": "Create New Word",
-        "description": "Add a new word to the dictionary. ",
+        "summary": "Submit a new word",
+        "description": "Submit a new dictionary entry for moderation.",
         "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
           {
             "name": "body",
             "in": "body",
-            "description": "Enter New word",
+            "description": "New word submission",
             "required": true,
             "schema": {
               "type": "object",
               "properties": {
-                "sourceLang": {
-                  "type": "string",
-                  "example": "en"
-                },
-                "targetLang": {
-                  "type": "string",
-                  "example": "ln"
-                },
                 "sourceWord": {
                   "type": "string",
                   "example": "love"
@@ -73,25 +68,23 @@
                   "type": "string",
                   "example": "bolingo"
                 },
+                "synonyms": {
+                  "type": "array",
+                  "example": [
+                    "amour",
+                    "liking"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
                 "partOfSpeech": {
                   "type": "string",
                   "example": "noun"
                 },
-                "examples": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "source": {
-                        "type": "string",
-                        "example": "I love you"
-                      },
-                      "target": {
-                        "type": "string",
-                        "example": "Nalingi yo"
-                      }
-                    }
-                  }
+                "example": {
+                  "type": "string",
+                  "example": "I love you"
                 }
               }
             }
@@ -100,140 +93,17 @@
         "responses": {
           "201": {
             "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
           }
         }
       }
     },
-    "/v1/words/{sourceWord}": {
-      "get": {
-        "tags": [
-          "API Endpoints"
-        ],
-        "summary": "Find the translation of a word.",
-        "description": "Get a specific word's translation using its source word.",
-        "parameters": [
-          {
-            "name": "sourceWord",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "description": "English source word",
-            "example": "love"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/v1/words/{id}": {
+    "/v1/words/{id}/validate": {
       "put": {
         "tags": [
-          "API Endpoints"
+          "Moderators' Endpoints"
         ],
-        "summary": "Edit Word",
-        "description": "Edit a specific word and save it to the dictionary. ",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "description": "Updated word fields",
-            "required": true,
-            "schema": {
-              "type": "object",
-              "properties": {
-                "sourceLang": {
-                  "type": "string",
-                  "example": "en"
-                },
-                "targetLang": {
-                  "type": "string",
-                  "example": "ln"
-                },
-                "sourceWord": {
-                  "type": "string",
-                  "example": "love"
-                },
-                "targetWord": {
-                  "type": "string",
-                  "example": "bolingo"
-                },
-                "partOfSpeech": {
-                  "type": "string",
-                  "example": "noun"
-                },
-                "examples": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "source": {
-                        "type": "string",
-                        "example": "I love you"
-                      },
-                      "target": {
-                        "type": "string",
-                        "example": "Nalingi yo"
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "No Content"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "API Endpoints"
-        ],
-        "summary": "Delete word",
-        "description": "Delete a word from the dictionary by ID.",
+        "summary": "Validate a word submission",
+        "description": "",
         "parameters": [
           {
             "name": "id",
@@ -249,11 +119,103 @@
           }
         ],
         "responses": {
-          "204": {
-            "description": "No Content"
+          "200": {
+            "description": "OK"
           },
-          "400": {
-            "description": "Bad Request"
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/v1/words/status/{status}": {
+      "get": {
+        "tags": [
+          "Moderators' Endpoints"
+        ],
+        "summary": "Filter words by status",
+        "description": "",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Status filter (pending/validated)"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/v1/words/all": {
+      "get": {
+        "tags": [
+          "Moderators' Endpoints"
+        ],
+        "summary": "List all words in the dictionary",
+        "description": "",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "403": {
+            "description": "Forbidden"
+          }
+        }
+      }
+    },
+    "/v1/words/{id}": {
+      "delete": {
+        "tags": [
+          "Moderators' Endpoints"
+        ],
+        "summary": "Delete a word by ID",
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Word ID"
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
           },
           "401": {
             "description": "Unauthorized"

@@ -1,43 +1,36 @@
 require('dotenv').config();
-
 const express = require('express');
-const app = express();
-
 const cors = require('cors');
+const { connectDB } = require('./db/connect');
 
-const { connectDB } = require('./database/config'); //Get database info
+const wordsRoutes = require('./routes/wordsRoutes');
+const swaggerRoutes = require('./routes/swaggerRoutes');
+const errorHandler = require('./middleware/errorHandler');
 
 const PORT = process.env.PORT || 3000;
+const app = express();
 
-//Import routes
-const router = require('./routes');
-const wordsRoutes = require('./routes/wordsRoutes');
-const submissionsRoutes = require('./routes/submissionsRoutes');
-const usersRoutes = require('./routes/usersRoutes');
-const swaggerRoutes = require('./routes/swaggerRoutes');
-
-
-app.use(cors()); //controls origin access
+// Middlewares
+app.use(cors());
 app.use(express.json());
 
-app.use('/', router); //Get default route
-app.use('/v1/words', wordsRoutes); //Get words route
-// app.use('/v1/submissions', submissionsRoutes); //Get words route
-// app.use('/users', usersRoutes); //Get words route
-app.use('/v1/api-docs', swaggerRoutes); //Get API documentation's route
+// Routes
+app.get(
+  '/', 
+  (req, res) => res.send('English–Lingala Dictionary API is running'));
+app.use('/v1/words', wordsRoutes);
+app.use('/v1/api-docs', swaggerRoutes);
 
-//Connect to database
-connectDB().then(() => {
-  console.log('MongoDB connected, starting server...'); //For testing
+// Centralized error handler 
+app.use(errorHandler);
 
-  app.listen(PORT, () => {
-    console.log(`Server running at port: ${PORT}`);
+// Connect to MongoDB and start server
+connectDB()
+  .then(() => {
+    console.log('MongoDB connected, starting server...');
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => {
+    console.error('Failed to connect to MongoDB:', err);
+    process.exit(1); // exit if DB fails
   });
-}).catch(err => {
-  console.error('Failed to connect to MongoDB:', err);
-});
-
-
-
-
-app.use(require('./middleware/errorHandler'));

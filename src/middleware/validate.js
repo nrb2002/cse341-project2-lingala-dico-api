@@ -7,66 +7,74 @@ const mongodb = require('mongodb');
 const isValidSourceWord = (value) => {
   if (!value || typeof value !== 'string') return false;
 
-  // allow letters, hyphen, apostrophe
-  const regex = /^[a-zA-Z'-]{1,50}$/;
+  // only letters, spaces, hyphens; 1-50 chars
+  const regex = /^[a-zA-Z\s-]{1,50}$/;
   return regex.test(value);
 };
 
 /**
- * Validate request BODY (POST / PUT)
+ * Validate POST / PUT BODY
+ * For contributors: targetWord is optional
  */
 const word = (req, res, next) => {
-  if (!req.body) {
-    return res.status(400).json({ message: 'Request body is required' });
+  try {
+    if (!req.body) throw { message: 'Request body is required', status: 400 };
+
+    const { sourceWord, targetWord, synonyms } = req.body;
+
+    if (!sourceWord || !isValidSourceWord(sourceWord)) {
+      throw { message: 'Invalid sourceWord', status: 400 };
+    }
+
+    if (targetWord && (typeof targetWord !== 'string' || validator.isEmpty(targetWord))) {
+      throw { message: 'Invalid targetWord', status: 400 };
+    }
+
+    if (synonyms && !Array.isArray(synonyms)) {
+      throw { message: 'Synonyms must be an array', status: 400 };
+    }
+
+    // normalize lowercase
+    req.body.sourceWord = sourceWord.toLowerCase();
+    if (targetWord) req.body.targetWord = targetWord.toLowerCase();
+    if (synonyms) req.body.synonyms = synonyms.map((s) => s.toLowerCase());
+
+    next();
+  } catch (err) {
+    next(err);
   }
-  
-  const { sourceWord, targetWord } = req.body;
-
-  // required fields
-  if (!sourceWord || !targetWord) {
-    return res.status(400).json({ message: 'Required fields missing' });
-  }
-
-  // sourceWord validation
-  if (!isValidSourceWord(sourceWord)) {
-    return res.status(400).json({ message: 'Invalid sourceWord' });
-  }
-
-  // targetWord validation
-  if (typeof targetWord !== 'string' || validator.isEmpty(targetWord)) {
-    return res.status(400).json({ message: 'Invalid targetWord' });
-  }
-
-  // normalize
-  req.body.sourceWord = sourceWord.toLowerCase();
-  req.body.targetWord = targetWord.toLowerCase();
-
-  next();
 };
 
 /**
  * Validate URL PARAM :sourceWord (GET)
  */
 const sourceWordParam = (req, res, next) => {
-  const { sourceWord } = req.params;
+  try {
+    const { sourceWord } = req.params;
 
-  if (!isValidSourceWord(sourceWord)) {
-    return res.status(400).json({ message: 'Invalid sourceWord parameter' });
+    if (!isValidSourceWord(sourceWord)) {
+      throw { message: 'Invalid sourceWord parameter', status: 400 };
+    }
+
+    req.params.sourceWord = sourceWord.toLowerCase();
+    next();
+  } catch (err) {
+    next(err);
   }
-
-  // normalize
-  req.params.sourceWord = sourceWord.toLowerCase();
-  next();
 };
 
 /**
  * Validate MongoDB ObjectId (PUT / DELETE)
  */
 const checkId = (req, res, next) => {
-  if (!mongodb.ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({ message: 'Invalid ID format' });
+  try {
+    if (!mongodb.ObjectId.isValid(req.params.id)) {
+      throw { message: 'Invalid ID format', status: 400 };
+    }
+    next();
+  } catch (err) {
+    next(err);
   }
-  next();
 };
 
 module.exports = {

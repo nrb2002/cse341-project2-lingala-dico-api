@@ -4,42 +4,48 @@ const wordsController = require('../controllers/wordsController');
 const validate = require('../middleware/validate');
 const auth = require('../middleware/auth');
 
-router.get('/', wordsController.getAllWords);
-
-// router.get(
-//   '/:id', 
-//   validate.checkId,
-//   wordsController.getSingleWord
-// );
-
-//Get a word's translation using its source
+// PUBLIC: Get validated word by sourceWord
 router.get(
-  '/:sourceWord', 
+  '/:sourceWord',
   validate.sourceWordParam,
-  wordsController.getSingleWord
+  wordsController.getValidatedWord
 );
 
+// CONTRIBUTORS: Submit a new word (optional fields allowed)
 router.post(
   '/',
-  auth.requiresAuth,
   validate.word,
-  wordsController.createWord
+  wordsController.submitWord
 );
 
+// Validate a word submission
 router.put(
-  '/:id', 
-  auth.requiresAuth, 
-  validate.word, 
-  validate.checkId, 
-  wordsController.updateWord
+  '/:id/validate',
+  auth.requiresAuth,
+  validate.checkId,
+  wordsController.validateWord
 );
 
+// Filter words by status
+router.get(
+  '/status/:status',
+  auth.requiresAuth,
+  wordsController.filterByStatus
+);
+
+// Get all words
+router.get(
+  '/all',
+  auth.requiresAuth,
+  wordsController.getAllWords
+);
+
+// Delete a word
 router.delete(
-  '/:id', 
-  auth.requiresAuth, 
-  validate.checkId, 
+  '/:id',
+  auth.requiresAuth,
+  validate.checkId,
   wordsController.deleteWord
 );
-
 
 module.exports = router;

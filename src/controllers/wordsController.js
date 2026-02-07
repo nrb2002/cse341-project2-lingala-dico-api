@@ -1,41 +1,31 @@
 const mongodb = require('mongodb');
 const Word = require('../models/Word');
+const { connectDB } = require('../db/connect');
 
-//Get all words
-const getAllWords = async (req, res, next) => {
-  //#swagger.tags=["API Endpoints"]
-  //#swagger.summary="Find all words"
-  //#swagger.description="List all words from the dictionary."
-  try {
-    const result = await (await Word.collection()).find().toArray();
-    res.status(200).json(result);
-  } catch (err) {
-    next(err);
-  }
-};
-
-//Get one specific word's translation
-const getSingleWord = async (req, res, next) => {
-  //#swagger.tags=["API Endpoints"]
-  //#swagger.summary="Find the translation of a word."
-  //#swagger.description="Get a specific word's translation using its source word."
+/** ****************************************************
+ *  PUBLIC USERS ENDPOINTS 
+ *****************************************************/
+const getValidatedWord = async (req, res, next) => {
+  //#swagger.tags=["Public Users' Endpoint"]
+  //#swagger.summary="Get a word's translation"
+  //#swagger.description="Retrieve a validated English–Lingala dictionary entry."
   /* #swagger.parameters['sourceWord'] = {
       in: 'path',
-      description: 'English source word',
       required: true,
       type: 'string',
       example: 'love'
   } */
-
   try {
-    const sourceWord = req.params.sourceWord.toLowerCase();
-
-    const result = await (await Word.collection()).findOne({
-      sourceWord: sourceWord
+    const db = await connectDB();
+    const result = await db.collection('words').findOne({
+      sourceWord: req.params.sourceWord,
+      status: 'validated'
     });
 
     if (!result) {
-      return res.status(404).json({ message: 'Word not found' });
+      const error = new Error('Word not found');
+      error.status = 404;
+      throw error;
     }
 
     res.status(200).json(result);
@@ -44,110 +34,141 @@ const getSingleWord = async (req, res, next) => {
   }
 };
 
-
-const createWord = async (req, res, next) => {
-  //#swagger.tags=["API Endpoints"]
-  //#swagger.summary="Create New Word"
-  //#swagger.description="Add a new word to the dictionary. "
+/** ****************************************************
+ *  CONTRIBUTORS' ENDPOINTS 
+ *****************************************************/
+const submitWord = async (req, res, next) => {
+  //#swagger.tags=["Contributors' Endpoint"]
+  //#swagger.summary="Submit a new word"
+  //#swagger.description="Submit a new dictionary entry for moderation."
   /* #swagger.parameters["body"] = {
-    in: "body",
-    description: "Enter New word",
-    required: true,
-    schema: { 
-      "sourceLang": "en",
-      "targetLang": "ln",
-      "sourceWord": "love",
-      "targetWord": "bolingo",
-      "partOfSpeech": "noun",
-      "examples": [
-        {
-          "source": "I love you",
-          "target": "Nalingi yo"
-        }
-      ]
-    }
+      in: "body",
+      description: "New word submission",
+      required: true,
+      schema: {
+        sourceWord: "love",
+        targetWord: "bolingo",
+        synonyms: ["amour", "liking"],
+        partOfSpeech: "noun",
+        example: "I love you"
+      }
   } */
   try {
+    const db = await connectDB();
+
     const newWord = {
-      sourceLang: req.body.sourceLang,
-      targetLang: req.body.targetLang,
       sourceWord: req.body.sourceWord,
-      targetWord: req.body.targetWord,
-      partOfSpeech: req.body.partOfSpeech,
-      examples: req.body.examples || [],
-      createdAt: new Date()
+      targetWord: req.body.targetWord || '',
+      synonyms: req.body.synonyms || [],
+      partOfSpeech: req.body.partOfSpeech || '',
+      example: req.body.example || '',
+      pronunciation: '',
+      status: 'pending',
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
-    const response = await (await Word.collection()).insertOne(newWord);
-    res.status(201).json(response);
+    await db.collection('words').insertOne(newWord);
+    res.status(201).json({ message: 'Submission received for review' });
   } catch (err) {
     next(err);
   }
 };
 
-const updateWord = async (req, res, next) => {
-  //#swagger.tags=["API Endpoints"]
-  //#swagger.summary="Edit Word"
-  //#swagger.description="Edit a specific word and save it to the dictionary. "
-/* #swagger.parameters["body"] = {
-  in: "body",
-  description: "Updated word fields",
-  required: true,
-  schema: {
-    sourceLang: "en",
-    targetLang: "ln",
-    sourceWord: "love",
-    targetWord: "bolingo",
-    partOfSpeech: "noun",
-    examples: [
-      { source: "I love you", target: "Nalingi yo" }
-    ]
-  }
-} */
-
+/** ****************************************************
+ *  MODERATORS/ADMIN ENDPOINTS 
+ *****************************************************/
+const validateWord = async (req, res, next) => {
+  //#swagger.tags=["Moderators' Endpoints"]
+  //#swagger.summary="Validate a word submission"
+  /* #swagger.parameters['id'] = {
+        in: 'path',
+        description: 'Word ID',
+        required: true,
+        type: 'string'
+  } */
   try {
-    const id = new mongodb.ObjectId(req.params.id);
-    const response = await (await Word.collection()).updateOne(
-      { _id: id },
-      { $set: req.body }
+    const db = await connectDB();
+    const result = await db.collection('words').updateOne(
+      { _id: new mongodb.ObjectId(req.params.id) },
+      { $set: { status: 'validated', updatedAt: new Date() } }
     );
 
-    if (response.matchedCount === 0) {
-      return res.status(404).json({ message: 'Word not found' });
+    if (result.matchedCount === 0) {
+      const error = new Error('Word not found');
+      error.status = 404;
+      throw error;
     }
 
-    res.status(204).send();
-
+    res.status(200).json({ message: 'Word validated successfully' });
   } catch (err) {
-      next(err);
+    next(err);
+  }
+};
+
+const filterByStatus = async (req, res, next) => {
+  //#swagger.tags=["Moderators' Endpoints"]
+  //#swagger.summary="Filter words by status"
+  /* #swagger.parameters['status'] = {
+        in: 'path',
+        description: 'Status filter (pending/validated)',
+        required: true,
+        type: 'string'
+  } */
+  try {
+    const db = await connectDB();
+    const results = await db.collection('words')
+      .find({ status: req.params.status })
+      .toArray();
+
+    res.status(200).json(results);
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getAllWords = async (req, res, next) => {
+  //#swagger.tags=["Moderators' Endpoints"]
+  //#swagger.summary="List all words in the dictionary"
+  try {
+    const db = await connectDB();
+    const results = await db.collection('words').find().toArray();
+    res.status(200).json(results);
+  } catch (err) {
+    next(err);
   }
 };
 
 const deleteWord = async (req, res, next) => {
-  //#swagger.tags=["API Endpoints"]
-  //#swagger.summary="Delete word"
-  //#swagger.description="Delete a word from the dictionary by ID."
+  //#swagger.tags=["Moderators' Endpoints"]
+  //#swagger.summary="Delete a word by ID"
   /* #swagger.parameters['id'] = {
-      in: 'path',
-      description: 'Word ID',
-      required: true,
-      type: 'string'
+        in: 'path',
+        description: 'Word ID',
+        required: true,
+        type: 'string'
   } */
-
   try {
-    const id = new mongodb.ObjectId(req.params.id);
-    await (await Word.collection()).deleteOne({ _id: id });
-    res.status(204).send();
+    const db = await connectDB();
+    const result = await db.collection('words').deleteOne({ _id: new mongodb.ObjectId(req.params.id) });
+
+    if (result.deletedCount === 0) {
+      const error = new Error('Word not found');
+      error.status = 404;
+      throw error;
+    }
+
+    res.status(200).json({ message: 'Word deleted successfully' });
   } catch (err) {
     next(err);
   }
 };
 
-
 module.exports = {
   getAllWords,
-  getSingleWord,
-  createWord,
-  updateWord,
+  filterByStatus,
+  getValidatedWord,
+  submitWord,
+  validateWord,
   deleteWord
 };
