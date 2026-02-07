@@ -18,7 +18,15 @@ const connectDB = async () => {
   await client.connect();
   
   db = client.db(process.env.DB_NAME);
+  
+  //For testing purposes
   //console.log('MongoDB connected');
+  (async () => {
+    const db = await connectDB();
+    const count = await db.collection('words').countDocuments();
+    console.log("Words count:", count);
+  })();
+  
   return db;
 };
 

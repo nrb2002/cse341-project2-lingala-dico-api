@@ -4,14 +4,28 @@ const wordsController = require('../controllers/wordsController');
 const validate = require('../middleware/validate');
 const auth = require('../middleware/auth');
 
-// PUBLIC: Get validated word by sourceWord
+// Get all words
+router.get(
+  '/all',
+  //auth.requiresAuth('admin', 'moderator'),
+  wordsController.getAllWords
+);
+
+// Filter by status
+router.get(
+  '/status/:status',
+  //auth.requiresAuth('admin', 'moderator'),
+  wordsController.filterByStatus
+);
+
+// Get validated word by sourceWord
 router.get(
   '/:sourceWord',
   validate.sourceWordParam,
   wordsController.getValidatedWord
 );
 
-// CONTRIBUTORS: Submit a new word (optional fields allowed)
+// Submit a new word (optional fields allowed)
 router.post(
   '/',
   validate.word,
@@ -21,29 +35,15 @@ router.post(
 // Validate a word submission
 router.put(
   '/:id/validate',
-  auth.requiresAuth,
+  //auth.requiresAuth('admin', 'moderator'),
   validate.checkId,
   wordsController.validateWord
-);
-
-// Filter by status
-router.get(
-  '/status/:status',
-  auth.requiresAuth,
-  wordsController.filterByStatus
-);
-
-// Get all words
-router.get(
-  '/all',
-  auth.requiresAuth,
-  wordsController.getAllWords
 );
 
 // Delete a word
 router.delete(
   '/:id',
-  auth.requiresAuth,
+  //auth.requiresAuth('admin', 'moderator'),
   validate.checkId,
   wordsController.deleteWord
 );

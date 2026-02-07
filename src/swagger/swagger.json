@@ -3,7 +3,7 @@
   "info": {
     "title": "Lingala Dico API",
     "version": "1.0.0",
-    "description": "This is a bilingual dictionary API. It provides words translations from English to Lingala and vice versa, and examples of common usage."
+    "description": "Bilingual dictionary API: English ↔ Lingala translations with usage examples."
   },
   "host": "localhost:3000",
   "basePath": "/",
@@ -11,11 +11,11 @@
     "http"
   ],
   "securityDefinitions": {
-    "roleAuth": {
+    "Bearer": {
       "type": "apiKey",
+      "name": "Authorization",
       "in": "header",
-      "name": "x-role",
-      "description": "Role-based access: admin or moderator"
+      "description": "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\""
     }
   },
   "paths": {
@@ -27,6 +27,59 @@
             "description": "OK"
           }
         }
+      }
+    },
+    "/v1/words/all": {
+      "get": {
+        "tags": [
+          "Moderators' Endpoints"
+        ],
+        "summary": "List all words in the dictionary",
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/words/status/{status}": {
+      "get": {
+        "tags": [
+          "Moderators' Endpoints"
+        ],
+        "summary": "Filter words by status",
+        "description": "",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "description": "Status filter (pending/validated)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     },
     "/v1/words/{sourceWord}": {
@@ -48,6 +101,12 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -101,6 +160,9 @@
         "responses": {
           "201": {
             "description": "Created"
+          },
+          "500": {
+            "description": "Internal Server Error"
           }
         }
       }
@@ -110,7 +172,7 @@
         "tags": [
           "Moderators' Endpoints"
         ],
-        "summary": "Validate a word submission",
+        "summary": "Validate a word submission and update all fields",
         "description": "",
         "parameters": [
           {
@@ -121,96 +183,61 @@
             "description": "Word ID"
           },
           {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "roleAuth": []
-          }
-        ]
-      }
-    },
-    "/v1/words/status/{status}": {
-      "get": {
-        "tags": [
-          "Moderators' Endpoints"
-        ],
-        "summary": "Filter words by status",
-        "description": "",
-        "parameters": [
-          {
-            "name": "status",
-            "in": "path",
+            "name": "body",
+            "in": "body",
+            "description": "Fields to update",
             "required": true,
-            "type": "string",
-            "description": "Status filter (pending/validated)"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
+            "schema": {
+              "type": "object",
+              "properties": {
+                "sourceWord": {
+                  "type": "string",
+                  "example": "love"
+                },
+                "targetWord": {
+                  "type": "string",
+                  "example": "bolingo"
+                },
+                "synonyms": {
+                  "type": "array",
+                  "example": [
+                    "amour",
+                    "liking"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "partOfSpeech": {
+                  "type": "string",
+                  "example": "noun"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "I love you"
+                },
+                "pronunciation": {
+                  "type": "string",
+                  "example": "bo-lin-go"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
           },
-          "401": {
-            "description": "Unauthorized"
+          "404": {
+            "description": "Not Found"
           },
-          "403": {
-            "description": "Forbidden"
+          "500": {
+            "description": "Internal Server Error"
           }
         },
         "security": [
           {
-            "roleAuth": []
-          }
-        ]
-      }
-    },
-    "/v1/words/all": {
-      "get": {
-        "tags": [
-          "Moderators' Endpoints"
-        ],
-        "summary": "List all words in the dictionary",
-        "description": "",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
-          }
-        },
-        "security": [
-          {
-            "roleAuth": []
+            "Bearer": []
           }
         ]
       }
@@ -229,24 +256,24 @@
             "required": true,
             "type": "string",
             "description": "Word ID"
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
           },
-          "401": {
-            "description": "Unauthorized"
+          "404": {
+            "description": "Not Found"
           },
-          "403": {
-            "description": "Forbidden"
+          "500": {
+            "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     }
   }

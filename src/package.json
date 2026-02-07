@@ -4,7 +4,7 @@
   "description": "This is a bilingual (Lingala-English) dictionary API. It provides words translations from English to Lingala and vice versa, and examples of usage.",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node scripts/seedWords.js && node swagger/swagger.js && nodemon server.js",
     "start": "node server.js",
     "dev": "node swagger/swagger.js && nodemon server.js",
     "swagger": "node swagger/swagger.js"

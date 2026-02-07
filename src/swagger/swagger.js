@@ -1,30 +1,32 @@
-const swaggerAutogen = require('swagger-autogen')(); //import swagger package
-
-//Build the documentation
+const swaggerAutogen = require('swagger-autogen')(); // import swagger package
 
 const doc = {
-    info: {
-        title: 'Lingala Dico API',
-        version: "1.0.0",
-        description: 'This is a bilingual dictionary API. It provides words translations from English to Lingala and vice versa, and examples of common usage.',
+  info: {
+    title: 'Lingala Dico API',
+    version: '1.0.0',
+    description: 'Bilingual dictionary API: English ↔ Lingala translations with usage examples.',
+  },
+  host:
+    process.env.NODE_ENV === 'production'
+      ? 'cse341-project2-lingala-dico-api.onrender.com'
+      : 'localhost:3000',
+  schemes: process.env.NODE_ENV === 'production' ? ['https'] : ['http'],
+
+  securityDefinitions: {
+    Bearer: {
+      type: 'apiKey',
+      name: 'Authorization',
+      in: 'header',
+      description:
+        'JWT Authorization header using the Bearer scheme. Example: "Bearer {token}"',
     },
-    host: process.env.NODE_ENV === 'production' ? 'https://cse341-project2-lingala-dico-api.onrender.com' : 'localhost:3000',
-    schemes: process.env.NODE_ENV === 'production' ? ['https'] : ['http'],    
-    securityDefinitions: {
-      roleAuth: {
-        type: 'apiKey',
-        in: 'header',
-        name: 'x-role',
-        description: 'Role-based access: admin or moderator'
-      }
-    }
+  },
 
 };
 
 const outputFile = './swagger.json';
-const endpointFiles = ['../server.js']; //get all endpoint files via the server to avoid routes confusion
+const endpointFiles = ['../server.js']; // include your server/routes files
 
 swaggerAutogen(outputFile, endpointFiles, doc).then(() => {
-    console.log("Swagger documentation generated.");
-}) //Generates the documentation
-
+  console.log('Swagger documentation generated.');
+});

@@ -1,8 +1,7 @@
 const router = require('express').Router();
 
 router.get('/', (req,res) => {
-    
-    res.send('Welcome to Project 2 - My Lingala Dico API.');
+    res.send('Lingala Dico API - Default Route.');
 });
 
 module.exports = router;
