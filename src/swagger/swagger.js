@@ -4,7 +4,7 @@ const doc = {
   info: {
     title: 'Lingala Dico API',
     version: '1.0.0',
-    description: 'Bilingual dictionary API: English ↔ Lingala translations with usage examples.',
+    description: 'Bilingual dictionary API: English - Lingala translations with usage examples.',
   },
   host:
     process.env.NODE_ENV === 'production'
