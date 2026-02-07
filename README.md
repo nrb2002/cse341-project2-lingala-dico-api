@@ -1,4 +1,4 @@
-# lingala-dico
+# Lingala Dico API
 This is a bilingual (English-Lingala) dictionary API. It provides words translations from English to Lingala and vice versa, and examples of common usage. 
 
 # Relevance
@@ -50,24 +50,7 @@ Word {
   updatedAt
 }
 
-3. Submissions (From contributors, pending moderators' approval)
 
-Submission {
-  _id,
-  sourceLang: "en",
-  targetLang: "ln",
-  sourceWord,
-  targetWord,
-  partOfSpeech,
-  examples,
-  notes,
-  submittedBy: userId,
-  status: "pending" | "approved" | "rejected",
-  reviewedBy,
-  reviewedAt,
-  rejectionReason,
-  createdAt
-}
 # Key idea:
 Never insert user submissions directly into Word.
 

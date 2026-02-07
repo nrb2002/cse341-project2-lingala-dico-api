@@ -26,7 +26,7 @@ router.put(
   wordsController.validateWord
 );
 
-// Filter words by status
+// Filter by status
 router.get(
   '/status/:status',
   auth.requiresAuth,

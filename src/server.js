@@ -17,7 +17,7 @@ app.use(express.json());
 // Routes
 app.get(
   '/', 
-  (req, res) => res.send('English–Lingala Dictionary API is running'));
+  (req, res) => res.send('My Lingala Dico API is live!'));
 app.use('/v1/words', wordsRoutes);
 app.use('/v1/api-docs', swaggerRoutes);
 

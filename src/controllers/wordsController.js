@@ -87,6 +87,7 @@ const validateWord = async (req, res, next) => {
         required: true,
         type: 'string'
   } */
+  //#swagger.security = [{"roleAuth": []}]
   try {
     const db = await connectDB();
     const result = await db.collection('words').updateOne(
@@ -115,6 +116,7 @@ const filterByStatus = async (req, res, next) => {
         required: true,
         type: 'string'
   } */
+  //#swagger.security = [{"roleAuth": []}]
   try {
     const db = await connectDB();
     const results = await db.collection('words')
@@ -130,6 +132,7 @@ const filterByStatus = async (req, res, next) => {
 const getAllWords = async (req, res, next) => {
   //#swagger.tags=["Moderators' Endpoints"]
   //#swagger.summary="List all words in the dictionary"
+  //#swagger.security = [{"roleAuth": []}]
   try {
     const db = await connectDB();
     const results = await db.collection('words').find().toArray();

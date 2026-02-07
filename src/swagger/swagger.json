@@ -1,15 +1,23 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "English-Lingala Dictionary API Documentation",
+    "title": "Lingala Dico API",
     "version": "1.0.0",
-    "description": "This is a bilingual (English-Lingala) dictionary API. It provides words translations from English to Lingala and vice versa, and examples of common usage."
+    "description": "This is a bilingual dictionary API. It provides words translations from English to Lingala and vice versa, and examples of common usage."
   },
   "host": "localhost:3000",
   "basePath": "/",
   "schemes": [
     "http"
   ],
+  "securityDefinitions": {
+    "roleAuth": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "x-role",
+      "description": "Role-based access: admin or moderator"
+    }
+  },
   "paths": {
     "/": {
       "get": {
@@ -128,7 +136,12 @@
           "403": {
             "description": "Forbidden"
           }
-        }
+        },
+        "security": [
+          {
+            "roleAuth": []
+          }
+        ]
       }
     },
     "/v1/words/status/{status}": {
@@ -162,7 +175,12 @@
           "403": {
             "description": "Forbidden"
           }
-        }
+        },
+        "security": [
+          {
+            "roleAuth": []
+          }
+        ]
       }
     },
     "/v1/words/all": {
@@ -189,7 +207,12 @@
           "403": {
             "description": "Forbidden"
           }
-        }
+        },
+        "security": [
+          {
+            "roleAuth": []
+          }
+        ]
       }
     },
     "/v1/words/{id}": {
