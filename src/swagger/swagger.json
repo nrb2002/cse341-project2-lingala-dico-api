@@ -8,7 +8,9 @@
   "host": "cse341-project2-lingala-dico-api.onrender.com",
   "basePath": "/",
   "schemes": [
+    "https",
     "http"
+
   ],
   "securityDefinitions": {
     "Bearer": {
