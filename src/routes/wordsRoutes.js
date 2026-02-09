@@ -2,50 +2,25 @@ const express = require('express');
 const router = express.Router();
 const wordsController = require('../controllers/wordsController');
 const validate = require('../middleware/validate');
-const auth = require('../middleware/auth');
+const { isAuthenticated, isModerator } = require('../middleware/authenticate'); // new
 
-// Get all words
-router.get(
-  '/all',
-  //auth.requiresAuth('admin', 'moderator'),
-  wordsController.getAllWords
-);
+/** ****************************************************
+ *  MODERATOR/ADMIN ROUTES (require login)
+ ******************************************************/
+router.get('/all', isAuthenticated, isModerator, wordsController.getAllWords);
 
-// Filter by status
-router.get(
-  '/status/:status',
-  //auth.requiresAuth('admin', 'moderator'),
-  wordsController.filterByStatus
-);
+router.get('/status/:status', isAuthenticated, isModerator, wordsController.filterByStatus);
 
-// Get validated word by sourceWord
-router.get(
-  '/:sourceWord',
-  validate.sourceWordParam,
-  wordsController.getValidatedWord
-);
+router.put('/:id/validate', isAuthenticated, isModerator, validate.checkId, wordsController.validateWord);
 
-// Submit a new word (optional fields allowed)
-router.post(
-  '/',
-  validate.word,
-  wordsController.submitWord
-);
+router.delete('/:id', isAuthenticated, isModerator, validate.checkId, wordsController.deleteWord);
 
-// Validate a word submission
-router.put(
-  '/:id/validate',
-  //auth.requiresAuth('admin', 'moderator'),
-  validate.checkId,
-  wordsController.validateWord
-);
 
-// Delete a word
-router.delete(
-  '/:id',
-  //auth.requiresAuth('admin', 'moderator'),
-  validate.checkId,
-  wordsController.deleteWord
-);
+/** ****************************************************
+ *  PUBLIC / CONTRIBUTOR ROUTES
+ ******************************************************/
+router.get('/:sourceWord', validate.sourceWordParam, wordsController.getValidatedWord);
+
+router.post('/', validate.word, wordsController.submitWord);
 
 module.exports = router;
