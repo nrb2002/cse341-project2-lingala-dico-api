@@ -2,19 +2,19 @@ const express = require('express');
 const router = express.Router();
 const wordsController = require('../controllers/wordsController');
 const validate = require('../middleware/validate');
-const auth = require('../middleware/auth');
+const { isAuthenticated } = require('../middleware/authenticate');
 
 // Get all words
 router.get(
   '/all',
-  //auth.requiresAuth('admin', 'moderator'),
+  isAuthenticated,
   wordsController.getAllWords
 );
 
 // Filter by status
 router.get(
   '/status/:status',
-  //auth.requiresAuth('admin', 'moderator'),
+  //isAuthenticated,
   wordsController.filterByStatus
 );
 
@@ -35,7 +35,7 @@ router.post(
 // Validate a word submission
 router.put(
   '/:id/validate',
-  //auth.requiresAuth('admin', 'moderator'),
+  //isAuthenticated,
   validate.checkId,
   wordsController.validateWord
 );
@@ -43,7 +43,7 @@ router.put(
 // Delete a word
 router.delete(
   '/:id',
-  //auth.requiresAuth('admin', 'moderator'),
+  //isAuthenticated,
   validate.checkId,
   wordsController.deleteWord
 );
