@@ -79,8 +79,13 @@ passport.deserializeUser((user, done) => {
  *  ROUTES CALL
  ********************************************/
 app.get('/', (req, res) => {
-      res.send(req.session.use !== undefined? `Logged in as ${req.session.user.displayName}` : "Logged out! ")
-    });
+  if (req.isAuthenticated()) {
+    res.send(`Logged in as ${req.user.displayName}`);
+  } else {
+    res.send('Logged out!');
+  }
+});
+
 
 app.get('/github/callback',
   passport.authenticate('github', { failureRedirect: '/v1/api-docs' }),

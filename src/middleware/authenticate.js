@@ -1,9 +1,12 @@
 const isAuthenticated = (req, res, next) => {
-  if(req.session.user === undefined){
-    return res.status(401).json("Access denied!");
-  }
-  next();
-}
+  if (req.isAuthenticated()) return next();
+  res.status(401).json({ message: 'Authentication required' });
+};
 
+const isModerator = (req, res, next) => {
+  const moderatorGitHubIds = [ /* list of GitHub IDs allowed */ ];
+  if (moderatorGitHubIds.includes(req.user.id)) return next();
+  res.status(403).json({ message: 'Moderator access required' });
+};
 
-module.exports = { isAuthenticated };
+module.exports = { isAuthenticated, isModerator };
