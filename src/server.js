@@ -12,7 +12,7 @@ const GitHubStrategy = require('passport-github2').Strategy;
 /** *******************************************
  *  DB CONNECTION IMPORT
  ********************************************/
-const { mongoDB } = require('./db/connect');
+const { connectDB } = require('./db/connect');
 
 /** *******************************************
  *  ROUTE IMPORTS
@@ -87,7 +87,9 @@ app.get('/', (req, res) => {
 });
 
 
-app.get('/github/callback',
+app.get(
+  //#swagger.tags=["Session & Authentication Endpoints"]
+  '/github/callback',
   passport.authenticate('github', { failureRedirect: '/v1/api-docs' }),
   (req, res) => {
     req.session.user = req.user;
@@ -112,7 +114,7 @@ app.use(errorHandler);
  *  SERVER LAUNCHING
  ********************************************/
 // Connect to MongoDB and start server
-mongoDB()
+connectDB()
   .then(() => {
     console.log('MongoDB connected, starting server...');
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

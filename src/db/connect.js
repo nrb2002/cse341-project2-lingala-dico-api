@@ -2,7 +2,7 @@ const { MongoClient } = require('mongodb');
 
 let db;
 
-const mongoDB = async () => {
+const connectDB = async () => {
   if (db) return db;
 
   if (!process.env.MONGODB_URI) {
@@ -22,7 +22,7 @@ const mongoDB = async () => {
   //For testing purposes
   //console.log('MongoDB connected');
   (async () => {
-    const db = await mongoDB();
+    const db = await connectDB();
     const count = await db.collection('words').countDocuments();
     console.log("Words count:", count);
   })();
@@ -30,4 +30,4 @@ const mongoDB = async () => {
   return db;
 };
 
-module.exports = { mongoDB };
+module.exports = { connectDB };

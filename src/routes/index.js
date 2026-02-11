@@ -11,12 +11,17 @@ router.get('/', (req, res) => {
 /** ************************************************
  * LOGIN ROUTE (GitHub OAuth)
  ************************************************ */
-router.get('/login', passport.authenticate('github'));
+router.get(
+  //#swagger.tags=["Session & Authentication Endpoints"]
+  '/login', 
+  passport.authenticate('github')
+);
 
 /** ************************************************
  * LOGOUT ROUTE
  ************************************************ */
 router.get('/logout', (req, res, next) => {
+  //#swagger.tags=["Session & Authentication Endpoints"]
   req.logout(err => {
     if (err) return next(err);
     req.session.destroy(() => {
