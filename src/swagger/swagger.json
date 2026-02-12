@@ -31,9 +31,6 @@
     },
     "/github/callback": {
       "get": {
-        "tags": [
-          "Session & Authentication Endpoints"
-        ],
         "description": "",
         "responses": {
           "default": {
@@ -42,7 +39,17 @@
         }
       }
     },
-    "/login": {
+    "/v1/": {
+      "get": {
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v1/login": {
       "get": {
         "tags": [
           "Session & Authentication Endpoints"
@@ -55,7 +62,7 @@
         }
       }
     },
-    "/logout": {
+    "/v1/logout": {
       "get": {
         "tags": [
           "Session & Authentication Endpoints"
@@ -71,19 +78,13 @@
     "/v1/words/all": {
       "get": {
         "tags": [
-          "Moderators' Endpoints"
+          "Admins only"
         ],
-        "summary": "List all words in the dictionary",
-        "description": "",
+        "summary": "Get all words. ",
+        "description": "Retrieve all dictionary entries, no matter the status.",
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
           },
           "500": {
             "description": "Internal Server Error"
@@ -99,28 +100,20 @@
     "/v1/words/status/{status}": {
       "get": {
         "tags": [
-          "Moderators' Endpoints"
+          "Admins only"
         ],
-        "summary": "Filter words by status",
         "description": "",
         "parameters": [
           {
             "name": "status",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Status filter (pending/validated)"
+            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
           },
           "500": {
             "description": "Internal Server Error"
@@ -133,12 +126,11 @@
         ]
       }
     },
-    "/v1/words/{id}/validate": {
+    "/v1/words/{id}": {
       "put": {
         "tags": [
-          "Moderators' Endpoints"
+          "Admins only"
         ],
-        "summary": "Validate a word submission and update all fields",
         "description": "",
         "parameters": [
           {
@@ -146,12 +138,12 @@
             "in": "path",
             "required": true,
             "type": "string",
-            "description": "Word ID"
+            "description": "Word ID to update"
           },
           {
             "name": "body",
             "in": "body",
-            "description": "Fields to update",
+            "description": "Fields to update for a word",
             "required": true,
             "schema": {
               "type": "object",
@@ -185,6 +177,10 @@
                 "pronunciation": {
                   "type": "string",
                   "example": "bo-lin-go"
+                },
+                "status": {
+                  "type": "string",
+                  "example": "validated"
                 }
               }
             }
@@ -193,12 +189,6 @@
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
           },
           "404": {
             "description": "Not Found"
@@ -212,33 +202,24 @@
             "Bearer": []
           }
         ]
-      }
-    },
-    "/v1/words/{id}": {
+      },
       "delete": {
         "tags": [
-          "Moderators' Endpoints"
+          "Admins only"
         ],
-        "summary": "Delete a word by ID",
-        "description": "",
+        "summary": "Delete a word from the dictionary. ",
+        "description": "Can only delete a word with the status of 'validated'. Please switch the Moderator role to delete a Submission. ",
         "parameters": [
           {
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "description": "Word ID"
+            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
-          },
-          "403": {
-            "description": "Forbidden"
           },
           "404": {
             "description": "Not Found"
@@ -257,17 +238,16 @@
     "/v1/words/{sourceWord}": {
       "get": {
         "tags": [
-          "Public Users' Endpoint"
+          "Public Users"
         ],
-        "summary": "Get a word's translation",
-        "description": "Retrieve a validated English–Lingala dictionary entry.",
+        "summary": "Get a word's translation. ",
+        "description": "Retrieve a validated dictionary entry by its source word. Public endpoint.",
         "parameters": [
           {
             "name": "sourceWord",
             "in": "path",
             "required": true,
-            "type": "string",
-            "example": "love"
+            "type": "string"
           }
         ],
         "responses": {
@@ -283,47 +263,36 @@
         }
       }
     },
-    "/v1/words/": {
+    "/v1/submissions/": {
       "post": {
         "tags": [
-          "Contributors' Endpoint"
+          "Submissions"
         ],
-        "summary": "Submit a new word",
-        "description": "Submit a new dictionary entry for moderation.",
+        "description": "",
         "parameters": [
           {
             "name": "body",
             "in": "body",
-            "description": "New word submission",
-            "required": true,
             "schema": {
               "type": "object",
               "properties": {
                 "sourceWord": {
-                  "type": "string",
-                  "example": "love"
+                  "example": "any"
                 },
                 "targetWord": {
-                  "type": "string",
-                  "example": "bolingo"
+                  "example": "any"
                 },
                 "synonyms": {
-                  "type": "array",
-                  "example": [
-                    "amour",
-                    "liking"
-                  ],
-                  "items": {
-                    "type": "string"
-                  }
+                  "example": "any"
                 },
                 "partOfSpeech": {
-                  "type": "string",
-                  "example": "noun"
+                  "example": "any"
                 },
                 "example": {
-                  "type": "string",
-                  "example": "I love you"
+                  "example": "any"
+                },
+                "pronunciation": {
+                  "example": "any"
                 }
               }
             }
@@ -336,7 +305,104 @@
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      },
+      "get": {
+        "tags": [
+          "Moderators Submissions"
+        ],
+        "description": "",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/submissions/validate/{id}": {
+      "put": {
+        "tags": [
+          "Moderators Submissions"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/v1/submissions/reject/{id}": {
+      "delete": {
+        "tags": [
+          "Moderators Submissions"
+        ],
+        "description": "",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
       }
     }
   }

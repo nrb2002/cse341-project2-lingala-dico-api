@@ -1,4 +1,3 @@
-const { ObjectId } = require('mongodb');
 const { connectDB } = require('../db/connect');
 
 const collection = async () => {

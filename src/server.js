@@ -1,4 +1,5 @@
 require('dotenv').config();
+
 /** *******************************************
  *  LIBRARY IMPORTS
  ********************************************/
@@ -19,11 +20,12 @@ const { connectDB } = require('./db/connect');
  ********************************************/
 const index = require('./routes/index');
 const wordsRoutes = require('./routes/wordsRoutes');
+const submissionsRoutes = require('./routes/submissionsRoutes');
 const swaggerRoutes = require('./routes/swaggerRoutes');
 const errorHandler = require('./middleware/errorHandler');
 
 /** *******************************************
- *  ENVIRONMENT VARIABLE
+ *  ENVIRONMENT VARIABLES
  ********************************************/
 const PORT = process.env.PORT || 3000;
 
@@ -33,50 +35,40 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 /** *******************************************
- *  MIDDLEWARES USE
+ *  MIDDLEWARES
  ********************************************/
-//Express middlewares
-app
-  .use(express.json())
-  .use(bodyParser.json())
-  .use(session({
-    secret:"secret",
-    resave: false,
-    saveUninitialized: true
-  }))
-  .use(passport.initialize()) //session initialization
-  .use(passport.session()) //include passport in every route call
-  .use(cors({
-    methods:['GET','POST','DELETE','UDPATE','PUT','PATCH']    
-  }))
-  .use(cors({origin: '*'}))
+app.use(express.json());
+app.use(bodyParser.json());
+app.use(cors({ origin: '*', methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH'] }));
 
-//Passport object
-passport.use(
-  new GitHubStrategy(
-    {
-      clientID: process.env.GITHUB_CLIENT_ID,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: process.env.CALLBACK_URL
-    },
-    (accessToken, refreshToken, profile, done) => {
-      // In a real app, you'd save/find user in DB here
-      return done(null, profile);
-    }
-  )
-);
-
-
-passport.serializeUser((user, done) => {
-  done(null, user);
-});
-passport.deserializeUser((user, done) => {
-  done(null, user);
-});
-  
+// Session + Passport
+app.use(session({
+  secret: "secret",
+  resave: false,
+  saveUninitialized: true
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 /** *******************************************
- *  ROUTES CALL
+ *  PASSPORT GITHUB STRATEGY
+ ********************************************/
+passport.use(new GitHubStrategy({
+    clientID: process.env.GITHUB_CLIENT_ID,
+    clientSecret: process.env.GITHUB_CLIENT_SECRET,
+    callbackURL: process.env.CALLBACK_URL
+  },
+  (accessToken, refreshToken, profile, done) => {
+    // Normally you would store/find user in DB here
+    return done(null, profile);
+  }
+));
+
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
+
+/** *******************************************
+ *  HOME & GITHUB CALLBACK ROUTES
  ********************************************/
 app.get('/', (req, res) => {
   if (req.isAuthenticated()) {
@@ -86,10 +78,7 @@ app.get('/', (req, res) => {
   }
 });
 
-
-app.get(
-  //#swagger.tags=["Session & Authentication Endpoints"]
-  '/github/callback',
+app.get('/github/callback',
   passport.authenticate('github', { failureRedirect: '/v1/api-docs' }),
   (req, res) => {
     req.session.user = req.user;
@@ -97,13 +86,13 @@ app.get(
   }
 );
 
-
-app
-  .use('/', index)
-  .use('/v1/words', wordsRoutes)
-  .use('/v1/api-docs', swaggerRoutes)
-
-
+/** *******************************************
+ *  API ROUTES
+ ********************************************/
+app.use('/v1', index); // optional aggregated routes
+app.use('/v1/words', wordsRoutes); // public + admin words endpoints
+app.use('/v1/submissions', submissionsRoutes); // contributors + moderators
+app.use('/v1/api-docs', swaggerRoutes); // Swagger UI
 
 /** *******************************************
  *  ERROR HANDLER
@@ -111,15 +100,14 @@ app
 app.use(errorHandler);
 
 /** *******************************************
- *  SERVER LAUNCHING
+ *  START SERVER
  ********************************************/
-// Connect to MongoDB and start server
 connectDB()
   .then(() => {
     console.log('MongoDB connected, starting server...');
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
-  .catch((err) => {
+  .catch(err => {
     console.error('Failed to connect to MongoDB:', err);
-    process.exit(1); // exit if DB fails
+    process.exit(1);
   });
