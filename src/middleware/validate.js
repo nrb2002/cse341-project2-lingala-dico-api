@@ -16,7 +16,7 @@ const isValidSourceWord = (value) => {
  * Validate POST / PUT BODY
  * For contributors: targetWord is optional
  */
-const word = (req, res, next) => {
+const validate = (req, res, next) => {
   try {
     if (!req.body) throw { message: 'Request body is required', status: 400 };
 
@@ -78,7 +78,7 @@ const checkId = (req, res, next) => {
 };
 
 module.exports = {
-  word,
+  validate,
   sourceWordParam,
   checkId
 };

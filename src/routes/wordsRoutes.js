@@ -1,46 +1,40 @@
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const wordsController = require('../controllers/wordsController');
-const validate = require('../middleware/validate');
-const { isAuthenticated, isModerator } = require('../middleware/authenticate'); 
+const { isAuthenticated } = require('../middleware/authenticate');
+const { validate, sourceWordParam, checkId } = require('../middleware/validate');
 
-/** ****************************************************
- *  MODERATOR/ADMIN ROUTES (require login)
- ******************************************************/
+// Admin endpoints
 router.get(
     '/all', 
     //isAuthenticated, 
-    // isModerator, 
     wordsController.getAllWords
 );
-
 router.get(
     '/status/:status', 
-    // isAuthenticated, 
-    // isModerator, 
-    wordsController.filterByStatus);
-
-router.put(
-    '/:id/validate', 
     //isAuthenticated, 
-    //isModerator, 
-    validate.checkId, 
-    wordsController.validateWord
+    wordsController.getWordsByStatus
 );
-
+router.put(
+    '/:id', 
+    //isAuthenticated,
+    checkId,
+    validate,
+    wordsController.editWord
+);
 router.delete(
     '/:id', 
     //isAuthenticated, 
-    //isModerator, 
-    validate.checkId, 
-    wordsController.deleteWord);
+    wordsController.deleteWord
+);
+
+// Public endpoint
+router.get(
+    '/:sourceWord',
+    sourceWordParam, 
+    wordsController.getWordBySource);
 
 
-/** ****************************************************
- *  PUBLIC / CONTRIBUTOR ROUTES
- ******************************************************/
-router.get('/:sourceWord', validate.sourceWordParam, wordsController.getValidatedWord);
 
-router.post('/', validate.word, wordsController.submitWord);
+
 
 module.exports = router;

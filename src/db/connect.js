@@ -23,8 +23,12 @@ const connectDB = async () => {
   //console.log('MongoDB connected');
   (async () => {
     const db = await connectDB();
-    const count = await db.collection('words').countDocuments();
+    
+    let count = await db.collection('words').countDocuments();
     console.log("Words count:", count);
+
+    count = await db.collection('submissions').countDocuments();
+    console.log("Submissions count:", count);
   })();
   
   return db;

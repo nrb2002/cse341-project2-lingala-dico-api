@@ -1,24 +1,19 @@
-const mongodb = require('mongodb');
-const { connectDB } = require('../db/connect');
+const { ObjectId } = require('mongodb');
+const wordsModel = require('../models/wordsModel');
 
 /** ****************************************************
- *  PUBLIC USERS ENDPOINTS 
+ * PUBLIC USERS
  *****************************************************/
-const getValidatedWord = async (req, res, next) => {
-  //#swagger.tags=["Public Users' Endpoint"]
-  //#swagger.summary="Get a word's translation"
-  //#swagger.description="Retrieve a validated English–Lingala dictionary entry."
-  /* #swagger.parameters['sourceWord'] = {
-      in: 'path',
-      required: true,
-      type: 'string',
-      example: 'love'
-  } */
+const getWordBySource = async (req, res) => {
+  //#swagger.tags=["Public Users"]
+  //#swagger.summary="Get a word's translation. "
+  //#swagger.description="Retrieve a validated dictionary entry by its source word. Public endpoint."
+
   try {
-    const db = await connectDB();
-    const result = await db.collection('words').findOne({
-      sourceWord: req.params.sourceWord,
-      status: 'validated'
+    const words = await wordsModel.collection();
+
+    const result = await words.findOne({
+      sourceWord: req.params.sourceWord
     });
 
     if (!result) {
@@ -27,69 +22,57 @@ const getValidatedWord = async (req, res, next) => {
 
     res.status(200).json(result);
   } catch (err) {
-    console.error("getValidatedWord error:", err);
-    res.status(500).json({ message: "Internal Server Error", error: err.message });
+    console.error('getWordBySource:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
 /** ****************************************************
- *  CONTRIBUTORS' ENDPOINTS 
+ * ADMIN / MODERATORS
  *****************************************************/
-const submitWord = async (req, res, next) => {
-  //#swagger.tags=["Contributors' Endpoint"]
-  //#swagger.summary="Submit a new word"
-  //#swagger.description="Submit a new dictionary entry for moderation."
-  /* #swagger.parameters["body"] = {
-      in: "body",
-      description: "New word submission",
-      required: true,
-      schema: {
-        sourceWord: "love",
-        targetWord: "bolingo",
-        synonyms: ["amour", "liking"],
-        partOfSpeech: "noun",
-        example: "I love you"
-      }
-  } */
-  try {
-    const db = await connectDB();
-
-    const newWord = {
-      sourceWord: req.body.sourceWord,
-      targetWord: req.body.targetWord || '',
-      synonyms: req.body.synonyms || [],
-      partOfSpeech: req.body.partOfSpeech || '',
-      example: req.body.example || '',
-      pronunciation: '',
-      status: 'pending',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    };
-
-    await db.collection('words').insertOne(newWord);
-    res.status(201).json({ message: 'Submission received for review' });
-  } catch (err) {
-    console.error("submitWord error:", err);
-    res.status(500).json({ message: "Internal Server Error", error: err.message });
-  }
-};
-
-/** ****************************************************
- *  MODERATORS/ADMIN ENDPOINTS 
- *****************************************************/
-const validateWord = async (req, res, next) => {
-  //#swagger.tags=["Moderators' Endpoints"]
-  //#swagger.summary="Validate a word submission and update all fields"
+const getAllWords = async (req, res) => {
+  //#swagger.tags=["Admins only"]
   //#swagger.security=[{"Bearer": []}]
-  /* #swagger.parameters['id'] = {
+  //#swagger.summary="Get all words. "
+  //#swagger.description="Retrieve all dictionary entries, no matter the status."
+  try {
+    const words = await wordsModel.collection();
+    const results = await words.find().toArray();
+
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('getAllWords:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+const getWordsByStatus = async (req, res) => {
+  //#swagger.tags=["Admins only"]
+  //#swagger.security=[{"Bearer": []}]
+  try {
+    const status = req.params.status; // "pending" or "validated"
+    const words = await wordsModel.collection();
+
+    const results = await words.find({ status }).toArray();
+    res.status(200).json(results);
+  } catch (err) {
+    console.error('getWordsByStatus:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+const editWord = async (req, res) => {
+  //#swagger.tags=["Admins only"]
+  //#swagger.security=[{"Bearer": []}]
+    /* #swagger.parameters['id'] = {
         in: 'path',
-        description: 'Word ID',
+        description: 'Word ID to update',
         required: true,
         type: 'string'
   } */
-  /* #swagger.parameters['body'] = {
-        in: 'body',
-        description: 'Fields to update',
+  /* #swagger.parameters["body"] = {
+        in: "body",
+        description: "Fields to update for a word",
         required: true,
         schema: {
           sourceWord: "love",
@@ -97,22 +80,21 @@ const validateWord = async (req, res, next) => {
           synonyms: ["amour", "liking"],
           partOfSpeech: "noun",
           example: "I love you",
-          pronunciation: "bo-lin-go"
+          pronunciation: "bo-lin-go",
+          status: "validated"
         }
   } */
-
   try {
-    const db = await connectDB();
+    const words = await wordsModel.collection();
+    const wordId = new ObjectId(req.params.id);
 
-    // Only include fields sent in request body
     const updateFields = {
       ...req.body,
-      status: 'validated',   // always enforce validated
-      updatedAt: new Date()  // update timestamp
+      updatedAt: new Date()
     };
 
-    const result = await db.collection('words').updateOne(
-      { _id: new mongodb.ObjectId(req.params.id) },
+    const result = await words.updateOne(
+      { _id: wordId },
       { $set: updateFields }
     );
 
@@ -120,65 +102,23 @@ const validateWord = async (req, res, next) => {
       return res.status(404).json({ message: 'Word not found' });
     }
 
-    res.status(200).json({ message: 'Word validated and updated successfully' });
+    res.status(200).json({ message: 'Word updated successfully' });
   } catch (err) {
-    console.error("validateWord error:", err);
-    res.status(500).json({ message: "Internal Server Error", error: err.message });
+    console.error('editWord:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
-
-const filterByStatus = async (req, res, next) => {
-  //#swagger.tags=["Moderators' Endpoints"]
-  //#swagger.summary="Filter words by status"
+const deleteWord = async (req, res) => {
+  //#swagger.tags=["Admins only"]
   //#swagger.security=[{"Bearer": []}]
-  /* #swagger.parameters['status'] = {
-        in: 'path',
-        description: 'Status filter (pending/validated)',
-        required: true,
-        type: 'string'
-  } */
+  //#swagger.summary="Delete a word from the dictionary. "
+  //#swagger.description="Can only delete a word with the status of 'validated'. Please switch the Moderator role to delete a Submission. "
   try {
-    const db = await connectDB();
-    const results = await db.collection('words')
-      .find({ status: req.params.status })
-      .toArray();
+    const words = await wordsModel.collection();
+    const wordId = new ObjectId(req.params.id);
 
-    res.status(200).json(results);
-  } catch (err) {
-    console.error("filterByStatus error:", err);
-    res.status(500).json({ message: "Internal Server Error", error: err.message });
-  }
-};
-
-const getAllWords = async (req, res, next) => {
-  //#swagger.tags=["Moderators' Endpoints"]
-  //#swagger.summary="List all words in the dictionary"
-  //#swagger.security=[{"Bearer": []}]
-  try {
-    const db = await connectDB();
-    const results = await db.collection('words').find().toArray();
-
-    res.status(200).json(results || []);
-  } catch (err) {
-    console.error("getAllWords error:", err);
-    res.status(500).json({ message: "Something went wrong", error: err.message });
-  }
-};
-
-const deleteWord = async (req, res, next) => {
-  //#swagger.tags=["Moderators' Endpoints"]
-  //#swagger.summary="Delete a word by ID"
-  //#swagger.security=[{"Bearer": []}]
-  /* #swagger.parameters['id'] = {
-        in: 'path',
-        description: 'Word ID',
-        required: true,
-        type: 'string'
-  } */
-  try {
-    const db = await connectDB();
-    const result = await db.collection('words').deleteOne({ _id: new mongodb.ObjectId(req.params.id) });
+    const result = await words.deleteOne({ _id: wordId });
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: 'Word not found' });
@@ -186,16 +126,15 @@ const deleteWord = async (req, res, next) => {
 
     res.status(200).json({ message: 'Word deleted successfully' });
   } catch (err) {
-    console.error("deleteWord error:", err);
-    res.status(500).json({ message: "Internal Server Error", error: err.message });
+    console.error('deleteWord:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
 module.exports = {
+  getWordBySource,
   getAllWords,
-  filterByStatus,
-  getValidatedWord,
-  submitWord,
-  validateWord,
+  getWordsByStatus,
+  editWord,
   deleteWord
 };
