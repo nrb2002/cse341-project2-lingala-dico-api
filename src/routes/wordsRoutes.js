@@ -1,22 +1,35 @@
 const router = require('express').Router();
 const wordsController = require('../controllers/wordsController');
-const { isAuthenticated } = require('../middleware/authenticate');
+const { isAuthenticated, isModerator, isAdmin } = require('../middleware/authenticate');
 const { validate, sourceWordParam, checkId } = require('../middleware/validate');
 
-// Admin endpoints
+/** ************************************ 
+ * ADMINS ENDPOINTS
+************************************  */
 router.get(
     '/all', 
-    //isAuthenticated, 
+    //isAuthenticated,
+    //isAdmin, 
     wordsController.getAllWords
 );
 router.get(
-    '/status/:status', 
-    //isAuthenticated, 
+    '/:status', 
+    //isAuthenticated,
+    //isAdmin, 
     wordsController.getWordsByStatus
 );
+
+router.post(
+  '/new',
+  //isAuthenticated,
+  //isAdmin,
+  wordsController.createWordAdmin
+);
+
 router.put(
     '/:id', 
     //isAuthenticated,
+    //isAdmin,
     checkId,
     validate,
     wordsController.editWord
@@ -24,14 +37,18 @@ router.put(
 router.delete(
     '/:id', 
     //isAuthenticated, 
+    //isAdmin,
     wordsController.deleteWord
 );
 
-// Public endpoint
+/** ************************************ 
+ * PUBLIC USERS ENDPOINT
+************************************  */
 router.get(
     '/:sourceWord',
     sourceWordParam, 
-    wordsController.getWordBySource);
+    wordsController.getWordBySource
+);
 
 
 

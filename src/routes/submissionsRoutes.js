@@ -4,7 +4,7 @@ const { isAuthenticated } = require('../middleware/authenticate');
 
 // Contributors
 router.post(
-    '/', 
+    '/contributor', 
     //isAuthenticated, 
     submissionsController.submitWord
 );

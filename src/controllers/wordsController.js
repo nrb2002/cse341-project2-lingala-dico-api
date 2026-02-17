@@ -1,5 +1,6 @@
 const { ObjectId } = require('mongodb');
 const wordsModel = require('../models/wordsModel');
+const submissionsModel = require('../models/submissionsModel');
 
 /** ****************************************************
  * PUBLIC USERS
@@ -28,13 +29,13 @@ const getWordBySource = async (req, res) => {
 };
 
 /** ****************************************************
- * ADMIN / MODERATORS
+ * ADMINS ENDPOINTS
  *****************************************************/
 const getAllWords = async (req, res) => {
-  //#swagger.tags=["Admins only"]
+  //#swagger.tags=["Admins"]
   //#swagger.security=[{"Bearer": []}]
-  //#swagger.summary="Get all words. "
-  //#swagger.description="Retrieve all dictionary entries, no matter the status."
+  //#swagger.summary="Get all validated words fro the 'words' collection."
+  //#swagger.description="Retrieve all dictionary entries, no matter the status. You must an admin to perform this operation. "
   try {
     const words = await wordsModel.collection();
     const results = await words.find().toArray();
@@ -47,22 +48,70 @@ const getAllWords = async (req, res) => {
 };
 
 const getWordsByStatus = async (req, res) => {
-  //#swagger.tags=["Admins only"]
+  //#swagger.tags=["Admins"]
   //#swagger.security=[{"Bearer": []}]
+  //#swagger.summary="Get words and submissions by status"
+  //#swagger.description="Returns all words and submissions matching the provided status."
+
   try {
     const status = req.params.status; // "pending" or "validated"
-    const words = await wordsModel.collection();
 
-    const results = await words.find({ status }).toArray();
-    res.status(200).json(results);
+    const wordsCollection = await wordsModel.collection();
+    const submissionsCollection = await submissionsModel.collection();
+
+    const [words, submissions] = await Promise.all([
+      wordsCollection.find({ status }).toArray(),
+      submissionsCollection.find({ status }).toArray()
+    ]);
+
+    res.status(200).json({
+      status,
+      total: words.length + submissions.length,
+      words,
+      submissions
+    });
   } catch (err) {
     console.error('getWordsByStatus:', err);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
+//Insert new word
+const createWordAdmin = async (req, res) => {
+  //#swagger.tags=["Admins"]
+  //#swagger.security=[{"Bearer": []}]
+  //#swagger.summary="Create a new word. "
+  //#swagger.description="Words created by Admins are automatically validated; no need to review. "
+  try {
+    const word = {
+      sourceWord: req.body.sourceWord,
+      targetWord: req.body.targetWord,
+      synonyms: req.body.synonyms || [],
+      partOfSpeech: req.body.partOfSpeech,
+      example: req.body.example || '',
+      pronunciation: req.body.pronunciation || '',
+      status: 'validated', // validate automatically since entered by admin
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const result = await wordsModel.collection().insertOne(word);
+
+    if (result.acknowledged) {
+      res.status(201).json({
+        message: 'Word created successfully by admin!',
+        id: result.insertedId
+      });
+    } else {
+      res.status(500).json({ message: 'Failed to create word' });
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
 const editWord = async (req, res) => {
-  //#swagger.tags=["Admins only"]
+  //#swagger.tags=["Admins"]
   //#swagger.security=[{"Bearer": []}]
     /* #swagger.parameters['id'] = {
         in: 'path',
@@ -110,10 +159,10 @@ const editWord = async (req, res) => {
 };
 
 const deleteWord = async (req, res) => {
-  //#swagger.tags=["Admins only"]
+  //#swagger.tags=["Admins"]
   //#swagger.security=[{"Bearer": []}]
   //#swagger.summary="Delete a word from the dictionary. "
-  //#swagger.description="Can only delete a word with the status of 'validated'. Please switch the Moderator role to delete a Submission. "
+  //#swagger.description="Can delete a word with the status of 'validated'. Please switch the Moderator role to delete a Submission. "
   try {
     const words = await wordsModel.collection();
     const wordId = new ObjectId(req.params.id);
@@ -135,6 +184,7 @@ module.exports = {
   getWordBySource,
   getAllWords,
   getWordsByStatus,
+  createWordAdmin,
   editWord,
   deleteWord
 };

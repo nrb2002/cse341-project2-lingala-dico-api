@@ -78,10 +78,10 @@
     "/v1/words/all": {
       "get": {
         "tags": [
-          "Admins only"
+          "Admins"
         ],
-        "summary": "Get all words. ",
-        "description": "Retrieve all dictionary entries, no matter the status.",
+        "summary": "Get all validated words fro the 'words' collection.",
+        "description": "Retrieve all dictionary entries, no matter the status. You must an admin to perform this operation. ",
         "responses": {
           "200": {
             "description": "OK"
@@ -97,12 +97,13 @@
         ]
       }
     },
-    "/v1/words/status/{status}": {
+    "/v1/words/{status}": {
       "get": {
         "tags": [
-          "Admins only"
+          "Admins"
         ],
-        "description": "",
+        "summary": "Get words and submissions by status",
+        "description": "Returns all words and submissions matching the provided status.",
         "parameters": [
           {
             "name": "status",
@@ -126,10 +127,61 @@
         ]
       }
     },
+    "/v1/words/new": {
+      "post": {
+        "tags": [
+          "Admins"
+        ],
+        "summary": "Create a new word. ",
+        "description": "Words created by Admins are automatically validated; no need to review. ",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "sourceWord": {
+                  "example": "any"
+                },
+                "targetWord": {
+                  "example": "any"
+                },
+                "synonyms": {
+                  "example": "any"
+                },
+                "partOfSpeech": {
+                  "example": "any"
+                },
+                "example": {
+                  "example": "any"
+                },
+                "pronunciation": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
     "/v1/words/{id}": {
       "put": {
         "tags": [
-          "Admins only"
+          "Admins"
         ],
         "description": "",
         "parameters": [
@@ -205,10 +257,10 @@
       },
       "delete": {
         "tags": [
-          "Admins only"
+          "Admins"
         ],
         "summary": "Delete a word from the dictionary. ",
-        "description": "Can only delete a word with the status of 'validated'. Please switch the Moderator role to delete a Submission. ",
+        "description": "Can delete a word with the status of 'validated'. Please switch the Moderator role to delete a Submission. ",
         "parameters": [
           {
             "name": "id",
@@ -263,10 +315,10 @@
         }
       }
     },
-    "/v1/submissions/": {
+    "/v1/submissions/contributor": {
       "post": {
         "tags": [
-          "Submissions"
+          "Contributors"
         ],
         "description": "",
         "parameters": [
@@ -311,7 +363,9 @@
             "Bearer": []
           }
         ]
-      },
+      }
+    },
+    "/v1/submissions/": {
       "get": {
         "tags": [
           "Moderators Submissions"
