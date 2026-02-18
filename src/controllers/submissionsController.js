@@ -35,7 +35,7 @@ const submitWord = async (req, res) => {
  * MODERATORS / ADMIN
  *****************************************************/
 const getPendingSubmissions = async (req, res) => {
-  //#swagger.tags=["Moderators Submissions"]
+  //#swagger.tags=["Moderators - Manage Submissions"]
   //#swagger.security=[{"Bearer": []}]
   try {
     const submissions = await submissionsModel.collection();
@@ -50,7 +50,7 @@ const getPendingSubmissions = async (req, res) => {
 
 const validateSubmission = async (req, res, next) => {
   /**
-   * #swagger.tags = ["Moderators Submissions"]
+   * #swagger.tags = ["Moderators - Manage Submissions"]
    //#swagger.security=[{"Bearer": []}]
     /* #swagger.parameters['id'] = {
         in: 'path',
@@ -121,7 +121,7 @@ const validateSubmission = async (req, res, next) => {
 
 
 const rejectSubmission = async (req, res) => {
-  //#swagger.tags=["Moderators Submissions"]
+  //#swagger.tags=["Moderators - Manage Submissions"]
   //#swagger.security=[{"Bearer": []}]
   try {
     const submissions = await submissionsModel.collection();
