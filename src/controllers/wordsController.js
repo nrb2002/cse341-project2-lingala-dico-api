@@ -83,15 +83,15 @@ const createWordAdmin = async (req, res, next) => {
   //#swagger.summary="Create a new word. "
   //#swagger.description="Words created by Admins are automatically validated; no need to review. "
   /* #swagger.parameters["body"] = {
-  in: "body",
-  required: true,
-  schema: {
-    sourceWord: "love",
-    targetWord: "bolingo",
-    synonyms: ["amour", "affection"],
-    partOfSpeech: "noun"
-  }
-} */
+    in: "body",
+    required: true,
+    schema: {
+      sourceWord: "love",
+      targetWord: "bolingo",
+      synonyms: ["amour", "affection"],
+      partOfSpeech: "noun"
+    }
+  } */
   try {
     const wordsCollection = await wordsModel.collection();
 
@@ -147,8 +147,7 @@ const editWord = async (req, res) => {
           synonyms: ["amour", "liking"],
           partOfSpeech: "noun",
           example: "I love you",
-          pronunciation: "bo-lin-go",
-          status: "validated"
+          pronunciation: "bo-lin-go"
         }
   } */
   try {
