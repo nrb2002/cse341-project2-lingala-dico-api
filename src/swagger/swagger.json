@@ -234,10 +234,6 @@
                 "pronunciation": {
                   "type": "string",
                   "example": "bo-lin-go"
-                },
-                "status": {
-                  "type": "string",
-                  "example": "validated"
                 }
               }
             }
@@ -320,7 +316,7 @@
         }
       }
     },
-    "/v1/submissions/contributor": {
+    "/v1/submissions/new": {
       "post": {
         "tags": [
           "Contributors"
@@ -380,9 +376,6 @@
           "200": {
             "description": "OK"
           },
-          "401": {
-            "description": "Unauthorized"
-          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -405,21 +398,63 @@
             "name": "id",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "description": "Word ID to update"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "description": "Fields to update for a word",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "sourceWord": {
+                  "type": "string",
+                  "example": "love"
+                },
+                "targetWord": {
+                  "type": "string",
+                  "example": "bolingo"
+                },
+                "synonyms": {
+                  "type": "array",
+                  "example": [
+                    "amour",
+                    "liking"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "partOfSpeech": {
+                  "type": "string",
+                  "example": "noun"
+                },
+                "example": {
+                  "type": "string",
+                  "example": "I love you"
+                },
+                "pronunciation": {
+                  "type": "string",
+                  "example": "bo-lin-go"
+                }
+              }
+            }
           }
         ],
         "responses": {
           "200": {
             "description": "OK"
           },
-          "401": {
-            "description": "Unauthorized"
+          "400": {
+            "description": "Bad Request"
           },
           "404": {
             "description": "Not Found"
           },
-          "500": {
-            "description": "Internal Server Error"
+          "409": {
+            "description": "Conflict"
           }
         },
         "security": [
@@ -446,9 +481,6 @@
         "responses": {
           "200": {
             "description": "OK"
-          },
-          "401": {
-            "description": "Unauthorized"
           },
           "404": {
             "description": "Not Found"
