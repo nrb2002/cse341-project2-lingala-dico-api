@@ -1,17 +1,36 @@
 const router = require('express').Router();
 const submissionsController = require('../controllers/submissionsController');
-const { isAuthenticated } = require('../middleware/authenticate');
+const { isAuthenticated, isModerator } = require('../middleware/authenticate');
+const { validate, sourceWordParam, checkId } = require('../middleware/validate');
 
 // Contributors
 router.post(
-    '/contributor', 
+    '/new', 
     //isAuthenticated, 
     submissionsController.submitWord
 );
 
-// Moderators/Admin
-router.get('/', isAuthenticated, submissionsController.getPendingSubmissions);
-router.put('/validate/:id', isAuthenticated, submissionsController.validateSubmission);
-router.delete('/reject/:id', isAuthenticated, submissionsController.rejectSubmission);
+// Moderators
+router.get(
+    '/', 
+    //isAuthenticated,
+    // isModerator, 
+    submissionsController.getPendingSubmissions
+);
+router.put(
+    '/validate/:id', 
+    // isAuthenticated,
+    // isModerator,
+    checkId,
+    validate, 
+    submissionsController.validateSubmission
+);
+router.delete(
+    '/reject/:id',  
+    // isAuthenticated,
+    // isModerator,
+    checkId, 
+    submissionsController.rejectSubmission
+);
 
 module.exports = router;
