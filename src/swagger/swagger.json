@@ -5,10 +5,10 @@
     "version": "1.0.0",
     "description": "Bilingual dictionary API: English - Lingala translations with usage examples."
   },
-  "host": "https://cse341-project2-lingala-dico-api.onrender.com",
+  "host": "cse341-project2-lingala-dico-api.onrender.com",
   "basePath": "/",
   "schemes": [
-    "http"
+    "https"
   ],
   "securityDefinitions": {
     "Bearer": {
