@@ -13,17 +13,18 @@ router.get(
     wordsController.getAllWords
 );
 router.get(
-    '/:status', 
+    '/status/:status', 
     //isAuthenticated,
     //isAdmin, 
     wordsController.getWordsByStatus
 );
 
 router.post(
-  '/new',
-  //isAuthenticated,
-  //isAdmin,
-  wordsController.createWordAdmin
+    '/new',
+    //isAuthenticated,
+    //isAdmin,
+    validate,
+    wordsController.createWordAdmin
 );
 
 router.put(
@@ -38,6 +39,7 @@ router.delete(
     '/:id', 
     //isAuthenticated, 
     //isAdmin,
+    checkId,
     wordsController.deleteWord
 );
 

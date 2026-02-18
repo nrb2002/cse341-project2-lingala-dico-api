@@ -80,7 +80,7 @@
         "tags": [
           "Admins"
         ],
-        "summary": "Get all validated words fro the 'words' collection.",
+        "summary": "Get all validated words from the 'words' collection.",
         "description": "Retrieve all dictionary entries, no matter the status. You must an admin to perform this operation. ",
         "responses": {
           "200": {
@@ -97,7 +97,7 @@
         ]
       }
     },
-    "/v1/words/{status}": {
+    "/v1/words/status/{status}": {
       "get": {
         "tags": [
           "Admins"
@@ -138,26 +138,31 @@
           {
             "name": "body",
             "in": "body",
+            "required": true,
             "schema": {
               "type": "object",
               "properties": {
                 "sourceWord": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "love"
                 },
                 "targetWord": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "bolingo"
                 },
                 "synonyms": {
-                  "example": "any"
+                  "type": "array",
+                  "example": [
+                    "amour",
+                    "affection"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
                 },
                 "partOfSpeech": {
-                  "example": "any"
-                },
-                "example": {
-                  "example": "any"
-                },
-                "pronunciation": {
-                  "example": "any"
+                  "type": "string",
+                  "example": "noun"
                 }
               }
             }
@@ -167,8 +172,8 @@
           "201": {
             "description": "Created"
           },
-          "500": {
-            "description": "Internal Server Error"
+          "409": {
+            "description": "Conflict"
           }
         },
         "security": [

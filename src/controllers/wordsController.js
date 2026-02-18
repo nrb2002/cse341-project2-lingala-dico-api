@@ -34,7 +34,7 @@ const getWordBySource = async (req, res) => {
 const getAllWords = async (req, res) => {
   //#swagger.tags=["Admins"]
   //#swagger.security=[{"Bearer": []}]
-  //#swagger.summary="Get all validated words fro the 'words' collection."
+  //#swagger.summary="Get all validated words from the 'words' collection."
   //#swagger.description="Retrieve all dictionary entries, no matter the status. You must an admin to perform this operation. "
   try {
     const words = await wordsModel.collection();
@@ -77,36 +77,54 @@ const getWordsByStatus = async (req, res) => {
 };
 
 //Insert new word
-const createWordAdmin = async (req, res) => {
+const createWordAdmin = async (req, res, next) => {
   //#swagger.tags=["Admins"]
   //#swagger.security=[{"Bearer": []}]
   //#swagger.summary="Create a new word. "
   //#swagger.description="Words created by Admins are automatically validated; no need to review. "
+  /* #swagger.parameters["body"] = {
+  in: "body",
+  required: true,
+  schema: {
+    sourceWord: "love",
+    targetWord: "bolingo",
+    synonyms: ["amour", "affection"],
+    partOfSpeech: "noun"
+  }
+} */
   try {
+    const wordsCollection = await wordsModel.collection();
+
+    const existing = await wordsCollection.findOne({
+      sourceWord: req.body.sourceWord
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        message: 'Word already exists'
+      });
+    }
+
     const word = {
       sourceWord: req.body.sourceWord,
-      targetWord: req.body.targetWord,
+      targetWord: req.body.targetWord || '',
       synonyms: req.body.synonyms || [],
-      partOfSpeech: req.body.partOfSpeech,
+      partOfSpeech: req.body.partOfSpeech || '',
       example: req.body.example || '',
       pronunciation: req.body.pronunciation || '',
-      status: 'validated', // validate automatically since entered by admin
+      status: 'validated',
       createdAt: new Date(),
       updatedAt: new Date()
     };
 
-    const result = await wordsModel.collection().insertOne(word);
+    const result = await wordsCollection.insertOne(word);
 
-    if (result.acknowledged) {
-      res.status(201).json({
-        message: 'Word created successfully by admin!',
-        id: result.insertedId
-      });
-    } else {
-      res.status(500).json({ message: 'Failed to create word' });
-    }
+    res.status(201).json({
+      message: 'Word created successfully by admin!',
+      id: result.insertedId
+    });
   } catch (err) {
-    res.status(500).json(err);
+    next(err);
   }
 };
 
