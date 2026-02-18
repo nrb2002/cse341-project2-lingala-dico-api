@@ -48,21 +48,53 @@ const getPendingSubmissions = async (req, res) => {
   }
 };
 
-const validateSubmission = async (req, res) => {
-  //#swagger.tags=["Moderators Submissions"]
-  //#swagger.security=[{"Bearer": []}]
+const validateSubmission = async (req, res, next) => {
+  /**
+   * #swagger.tags = ["Moderators Submissions"]
+   //#swagger.security=[{"Bearer": []}]
+    /* #swagger.parameters['id'] = {
+        in: 'path',
+        description: 'Word ID to update',
+        required: true,
+        type: 'string'
+  } */
+  /* #swagger.parameters["body"] = {
+        in: "body",
+        description: "Fields to update for a word",
+        required: true,
+        schema: {
+          sourceWord: "love",
+          targetWord: "bolingo",
+          synonyms: ["amour", "liking"],
+          partOfSpeech: "noun",
+          example: "I love you",
+          pronunciation: "bo-lin-go"
+        }
+  } */
+
   try {
     const submissions = await submissionsModel.collection();
     const words = await wordsModel.collection();
-    const submissionId = new ObjectId(req.params.id);
 
-    // Find the submission
+    let submissionId;
+    try {
+      submissionId = new ObjectId(req.params.id.trim());
+    } catch (err) {
+      return res.status(400).json({ message: 'Invalid submission ID' });
+    }
+
     const submission = await submissions.findOne({ _id: submissionId });
     if (!submission) {
       return res.status(404).json({ message: 'Submission not found' });
     }
 
-    // Insert into words collection as validated
+    // Check duplicate
+    const existingWord = await words.findOne({ sourceWord: submission.sourceWord });
+    if (existingWord) {
+      return res.status(409).json({ message: 'Word already exists in dictionary' });
+    }
+
+    // Insert validated word
     await words.insertOne({
       sourceWord: submission.sourceWord,
       targetWord: submission.targetWord,
@@ -75,15 +107,17 @@ const validateSubmission = async (req, res) => {
       updatedAt: new Date()
     });
 
-    // Delete from submissions collection
+    // Delete submission
     await submissions.deleteOne({ _id: submissionId });
 
     res.status(200).json({ message: 'Submission validated and moved to words collection' });
+
   } catch (err) {
     console.error('validateSubmission:', err);
-    res.status(500).json({ message: 'Internal Server Error' });
+    next(err); // use centralized error handler
   }
 };
+
 
 
 const rejectSubmission = async (req, res) => {
