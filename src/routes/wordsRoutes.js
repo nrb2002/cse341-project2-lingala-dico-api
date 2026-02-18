@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const wordsController = require('../controllers/wordsController');
-const { isAuthenticated, isModerator, isAdmin } = require('../middleware/authenticate');
+const { isAuthenticated, isAdmin } = require('../middleware/authenticate');
 const { validate, sourceWordParam, checkId } = require('../middleware/validate');
 
 /** ************************************ 
